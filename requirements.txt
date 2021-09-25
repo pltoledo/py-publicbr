@@ -1,0 +1,7 @@
+numpy==1.19.5
+pandas==1.2.4
+Unidecode==1.2.0
+requests==2.25.1
+urllib3==1.26.5
+geocoder==1.38.1
+beautifulsoup4==4.9.3
