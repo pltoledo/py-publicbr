@@ -29,7 +29,6 @@ class CNPJCrawler(Crawler):
 
         self.base_url = 'http://200.152.38.155/CNPJ/'
         self.save_dir = save_dir
-        create_dir(save_dir)
         r = requests.get(self.base_url)
         soup = BeautifulSoup(r.content, 'html.parser')
         self.files = [i['href'] for i in soup.select('a', href=True) 
@@ -118,5 +117,6 @@ class CNPJCrawler(Crawler):
         self:
             returns an instance of the object
         """
+        create_dir(self.save_dir)
         self.get_data(overwrite)
         self.unzip()

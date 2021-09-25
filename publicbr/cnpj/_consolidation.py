@@ -76,7 +76,8 @@ class AuxCleaner(Cleaner):
         schema : str
             String specifying the schema of the DataFrame
         """
-        cols = [f'cod_{file_id}', f'nome_{file_id}']
+        name = AUX_NAMES[file_id]
+        cols = [f'cod_{name}', f'nome_{name}']
         schema = ', '.join([c + ' STRING' for c in cols])
         return schema
 
@@ -101,19 +102,25 @@ class AuxCleaner(Cleaner):
         )
         return df_cleaned
 
-    def clean(self) -> None:
+    def clean(self, mode: str = 'error') -> None:
         """
-        Wrapper for executing the methods to each auxiliar table.
+        Wrapper for method execution.
         
         Parameters
         ----------    
-        None
+        mode : str
+            Specify the mode of writing data, if data already exist in the designed path
+            * append: Append the contents of the DataFrame to the existing data
+            * overwrite: Overwrite existing data
+            * ignore: Silently ignores this operation
+            * error or errorifexists (default): Raises an error
         
         Returns
     	-------
         self:
             returns an instance of the object
         """
+        create_dir(self.save_dir)
         files = self.get_files()
         for file, id in zip(files, self.file_ids):
             file_path = join_path(self.file_dir, file)
@@ -125,10 +132,11 @@ class AuxCleaner(Cleaner):
                 **RAW_READ_OPTS
             )
             df = self.transform_data(df)
-            save_path = join_path(self.save_dir, AUX_NAMES[id])
+            save_path = join_path(self.save_dir, 'df_' + AUX_NAMES[id])
             self.write_data(
                 df, 
                 save_path, 
+                mode,
                 encoding = "UTF-8"
             )
 
@@ -206,19 +214,25 @@ class SimplesCleaner(Cleaner):
             .transform(clean_types('date', date_cols))
         )
         
-    def clean(self) -> None:
+    def clean(self, mode: str = 'error') -> None:
         """
         Wrapper for method execution.
         
         Parameters
         ----------    
-        None
+        mode : str
+            Specify the mode of writing data, if data already exist in the designed path
+            * append: Append the contents of the DataFrame to the existing data
+            * overwrite: Overwrite existing data
+            * ignore: Silently ignores this operation
+            * error or errorifexists (default): Raises an error
         
         Returns
     	-------
         self:
             returns an instance of the object
         """
+        create_dir(self.save_dir)
         self.define_schema()
         file_path = join_path(self.file_dir, '*SIMPLES*')
         self.df = self.read_data(
@@ -231,7 +245,8 @@ class SimplesCleaner(Cleaner):
         save_path = join_path(self.save_dir, 'df_simples')
         self.write_data(
             self.df_cleaned, 
-            save_path, 
+            save_path,
+            mode, 
             encoding = "UTF-8"
         )
 
@@ -272,14 +287,12 @@ class SociosCleaner(BigDataCleaner, Cleaner):
     """
 
     def __init__(self, spark_session: SparkSession, file_dir: str, save_dir: str) -> None:
-
         super().__init__(spark_session, file_dir, save_dir)
         self.aux_paths = {
             'pais': join_path(save_dir, 'df_pais'),
             'quals': join_path(save_dir, 'df_qual_socio')
         }
         self.int_dir = join_path(file_dir, 'int_tables')
-        create_dir(self.int_dir)
 
     def define_schema(self) -> None:
         """
@@ -366,19 +379,26 @@ class SociosCleaner(BigDataCleaner, Cleaner):
             )
         )
 
-    def clean(self) -> None:
+    def clean(self, mode: str = 'error') -> None:
         """
         Wrapper for method execution.
         
         Parameters
         ----------    
-        None
+        mode : str
+            Specify the mode of writing data, if data already exist in the designed path
+            * append: Append the contents of the DataFrame to the existing data
+            * overwrite: Overwrite existing data
+            * ignore: Silently ignores this operation
+            * error or errorifexists (default): Raises an error
         
         Returns
     	-------
         self:
             returns an instance of the object
         """
+        create_dir(self.save_dir)
+        create_dir(self.int_dir)
         self.define_schema()
         file_path = join_path(self.file_dir, f'*SOCIOCSV')
         int_path = join_path(self.int_dir, 'int_socios')
@@ -397,6 +417,7 @@ class SociosCleaner(BigDataCleaner, Cleaner):
         self.write_data(
             self.df_cleaned, 
             save_path, 
+            mode,
             encoding = "UTF-8"
         )
         shutil.rmtree(self.int_dir)
@@ -442,7 +463,6 @@ class EmpresasCleaner(BigDataCleaner, Cleaner):
             'quals': join_path(save_dir, 'df_qual_socio')
         }
         self.int_dir = join_path(file_dir, 'int_tables')
-        create_dir(self.int_dir)
 
     def define_schema(self) -> None:
         """
@@ -511,19 +531,26 @@ class EmpresasCleaner(BigDataCleaner, Cleaner):
             )
         )
 
-    def clean(self) -> None:
+    def clean(self, mode: str = 'error') -> None:
         """
         Wrapper for method execution.
         
         Parameters
         ----------    
-        None
+        mode : str
+            Specify the mode of writing data, if data already exist in the designed path
+            * append: Append the contents of the DataFrame to the existing data
+            * overwrite: Overwrite existing data
+            * ignore: Silently ignores this operation
+            * error or errorifexists (default): Raises an error
         
         Returns
     	-------
         self:
             returns an instance of the object
         """
+        create_dir(self.save_dir)
+        create_dir(self.int_dir)
         self.define_schema()
         file_path = join_path(self.file_dir, f'*EMPRECSV')
         int_path = int_path = join_path(self.int_dir, 'int_empresas')
@@ -542,6 +569,7 @@ class EmpresasCleaner(BigDataCleaner, Cleaner):
         self.write_data(
             self.df_cleaned, 
             save_path, 
+            mode,
             encoding = "UTF-8"
         )
         shutil.rmtree(self.int_dir)
@@ -588,7 +616,6 @@ class EstabCleaner(BigDataCleaner, Cleaner):
             'pais': join_path(save_dir, 'df_pais')
         }
         self.int_dir = join_path(file_dir, 'int_tables')
-        create_dir(self.int_dir)
 
     def define_schema(self) -> None:
         """
@@ -647,19 +674,26 @@ class EstabCleaner(BigDataCleaner, Cleaner):
             .select(*cols, *['nome_mun', 'nome_pais'])
         )
 
-    def clean(self) -> None:
+    def clean(self, mode: str = 'error') -> None:
         """
         Wrapper for method execution.
         
         Parameters
         ----------    
-        None
+        mode : str
+            Specify the mode of writing data, if data already exist in the designed path
+            * append: Append the contents of the DataFrame to the existing data
+            * overwrite: Overwrite existing data
+            * ignore: Silently ignores this operation
+            * error or errorifexists (default): Raises an error
         
         Returns
     	-------
         self:
             returns an instance of the object
         """
+        create_dir(self.save_dir)
+        create_dir(self.int_dir)
         self.define_schema()
         file_path = join_path(self.file_dir, f'*ESTABELE')
         int_path = int_path = join_path(self.int_dir, 'int_estab')
@@ -678,7 +712,8 @@ class EstabCleaner(BigDataCleaner, Cleaner):
         save_path = join_path(self.save_dir, 'df_estab')
         self.write_data(
             self.df_cleaned, 
-            save_path, 
+            save_path,
+            mode,
             encoding = "UTF-8"
         )
         shutil.rmtree(self.int_dir)

@@ -39,8 +39,8 @@ class CNPJSource(PublicSource):
 
     def __init__(self, spark_session: SparkSession, file_dir: str) -> None:
         super().__init__(spark_session, file_dir)
+        self.raw_dir = join_path(self.raw_dir, 'cnpj')
         self.save_dir = join_path(self.trusted_dir, 'cnpj')
-        create_dir(self.save_dir)
         self.crawler = CNPJCrawler(self.raw_dir)
         self.cleaners = {
             'Auxiliar Tables': AuxCleaner,
@@ -99,6 +99,8 @@ class CNPJSource(PublicSource):
         self:
             returns an instance of the object
         """
+        create_dir(self.raw_dir)
+        create_dir(self.save_dir)
         if download:
             self.extract()
         self.transform()

@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from pyspark.sql import SparkSession
 from pyspark.sql.types import StructType
 from typing import Union
-from .utils import join_path, create_dir
+from .utils import join_path
 
 from pyspark.sql.dataframe import DataFrame
 
@@ -73,7 +73,7 @@ class Cleaner(ABC):
         """
         return self.spark.read.format(format).options(**kwargs).load(file_path, schema=schema)
 
-    def write_data(self, df, save_path, **kwargs) -> None:
+    def write_data(self, df: DataFrame, save_path: str, mode: str, **kwargs) -> None:
         """
         Writes DataFrame as parquet file in the specified destination
         
@@ -84,8 +84,15 @@ class Cleaner(ABC):
 
         save_path : str
             Path to where data should be written
+
+        mode : str
+            Specify the mode of writing data, if data already exist in the designed path
+            * append: Append the contents of the DataFrame to the existing data
+            * overwrite: Overwrite existing data
+            * ignore: Silently ignores this operation
+            * error or errorifexists (default): Raises an error
         """
-        df.write.options(**kwargs).save(save_path)
+        df.write.options(**kwargs).mode(mode).save(save_path)
 
 class PublicSource(ABC):
     """
@@ -107,8 +114,6 @@ class PublicSource(ABC):
         self.spark = spark_session
         self.raw_dir = join_path(file_dir, 'data', 'raw')
         self.trusted_dir = join_path(file_dir, 'data', 'trusted')
-        create_dir(self.raw_dir)
-        create_dir(self.trusted_dir)
 
     @abstractmethod
     def extract(self) -> None:

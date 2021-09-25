@@ -1,7 +1,6 @@
-numpy==1.19.5
-pandas==1.2.4
-Unidecode==1.2.0
-requests==2.25.1
-urllib3==1.26.5
+tqdm==4.59.0
 geocoder==1.38.1
-beautifulsoup4==4.9.3
+requests==2.25.1
+pyspark==3.1.2
+Unidecode==1.2.0
+beautifulsoup4==4.10.0

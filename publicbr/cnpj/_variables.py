@@ -1,10 +1,10 @@
 AUX_NAMES = {
-    'CNAE': 'df_cnae', 
-    'MUNIC': 'df_mun', 
-    'NATJU': 'df_natju', 
-    'PAIS': 'df_pais', 
-    'QUALS': 'df_qual_socio', 
-    'MOTI': 'df_motivo'
+    'CNAE': 'cnae', 
+    'MUNIC': 'mun', 
+    'NATJU': 'natju', 
+    'PAIS': 'pais', 
+    'QUALS': 'qual_socio', 
+    'MOTI': 'motivo'
 }
 RAW_READ_OPTS = {
         'encoding': 'ISO-8859-1',
