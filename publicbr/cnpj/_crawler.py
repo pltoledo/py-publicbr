@@ -5,6 +5,7 @@ from ..base import Crawler
 import requests
 import os
 import zipfile
+import shutil
 
 class CNPJCrawler(Crawler):
     """
@@ -51,9 +52,10 @@ class CNPJCrawler(Crawler):
         self:
             returns an instance of the object
         """
-        r = requests.get(url)
-        with open(save_path, 'wb') as fd:
-            fd.write(r.content)
+        with requests.get(url, stream=True) as r:    
+            with open(save_path, 'wb') as fd:
+                shutil.copyfileobj(r.raw, fd)
+                #fd.write(r.content)
     
     def get_data(self, overwrite: bool) -> None:
         """
@@ -71,7 +73,7 @@ class CNPJCrawler(Crawler):
         """
         for file in tqdm(self.files):
             url = self.base_url + file
-            save_path = join_path(self.save_dir, file)
+            save_path = join_path(self.save_dir, file.replace('.zip', ''))
             if not os.path.exists(save_path):
                 self.download_url(url, save_path)
             elif overwrite:
