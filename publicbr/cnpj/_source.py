@@ -50,13 +50,14 @@ class CNPJSource(PublicSource):
             'Estabelecimentos': EstabCleaner
         }
 
-    def extract(self):
+    def extract(self, overwrite):
         """
         Extract data from public CNPJ data source.
         
         Parameters
         ----------    
-        None
+        overwrite : bool
+            Indicator of if the already existing files should be overwritten.
         
         Returns
     	-------
@@ -64,7 +65,7 @@ class CNPJSource(PublicSource):
             returns an instance of the object
         """
         logging.info("Extracting data...")
-        self.crawler.run()
+        self.crawler.run(overwrite)
 
     def transform(self):
         """
@@ -85,7 +86,7 @@ class CNPJSource(PublicSource):
             cleaner = obj(self.spark, self.raw_dir, self.save_dir)
             cleaner.clean()
 
-    def create(self, download: bool = True):
+    def create(self, download: bool = True, overwrite: bool = True):
         """
         Wrapper for method execution.
         
@@ -93,6 +94,9 @@ class CNPJSource(PublicSource):
         ----------    
         download : bool
             Indicator that the raw files must be downloaded
+
+        overwrite : bool
+            Indicator of if the already existing files should be overwritten.
 
         Returns
     	-------
@@ -102,7 +106,7 @@ class CNPJSource(PublicSource):
         create_dir(self.raw_dir)
         create_dir(self.save_dir)
         if download:
-            self.extract()
+            self.extract(overwrite)
         self.transform()
         logging.info("Success!")
 
