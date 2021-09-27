@@ -3,7 +3,6 @@ import pyspark.sql.functions as f
 from pyspark.sql import SparkSession
 from ..utils import *
 from ..base import Cleaner
-from ._base import BigDataCleaner
 from ._variables import *
 import os
 import shutil
@@ -102,7 +101,7 @@ class AuxCleaner(Cleaner):
         )
         return df_cleaned
 
-    def clean(self, mode: str = 'error') -> None:
+    def clean(self, mode: str = 'error', n_partitions:int = 32) -> None:
         """
         Wrapper for method execution.
         
@@ -114,6 +113,9 @@ class AuxCleaner(Cleaner):
             * overwrite: Overwrite existing data
             * ignore: Silently ignores this operation
             * error or errorifexists (default): Raises an error
+
+        n_partitions : int
+            Number of data partitions in execution
         
         Returns
     	-------
@@ -137,6 +139,7 @@ class AuxCleaner(Cleaner):
                 df, 
                 save_path, 
                 mode,
+                n_partitions,
                 encoding = "UTF-8"
             )
 
@@ -214,7 +217,7 @@ class SimplesCleaner(Cleaner):
             .transform(clean_types('date', date_cols))
         )
         
-    def clean(self, mode: str = 'error') -> None:
+    def clean(self, mode: str = 'error', n_partitions:int = 32) -> None:
         """
         Wrapper for method execution.
         
@@ -226,6 +229,9 @@ class SimplesCleaner(Cleaner):
             * overwrite: Overwrite existing data
             * ignore: Silently ignores this operation
             * error or errorifexists (default): Raises an error
+
+        n_partitions : int
+            Number of data partitions in execution
         
         Returns
     	-------
@@ -247,10 +253,11 @@ class SimplesCleaner(Cleaner):
             self.df_cleaned, 
             save_path,
             mode, 
+            n_partitions,
             encoding = "UTF-8"
         )
 
-class SociosCleaner(BigDataCleaner, Cleaner):
+class SociosCleaner(Cleaner):
     """
     Class used to clean the table containing information about partners.
     
@@ -337,16 +344,16 @@ class SociosCleaner(BigDataCleaner, Cleaner):
         # Specific Cleaning
         rename_quals = [f.col(c).alias(c + '_rep_legal') for c in self.df_qual_socio.columns]
         predicado = """
-                    CASE WHEN porte = 0 THEN "Nao se aplica"
-                         WHEN porte = 1 THEN "0 a 12 anos"
-                         WHEN porte = 2 THEN "13 a 20 anos"
-                         WHEN porte = 3 THEN "21 a 30 anos"
-                         WHEN porte = 4 THEN "31 a 40 anos"
-                         WHEN porte = 5 THEN "41 a 50 anos"
-                         WHEN porte = 6 THEN "51 a 60 anos"
-                         WHEN porte = 7 THEN "61 a 70 anos"
-                         WHEN porte = 8 THEN "71 a 80 anos"
-                         WHEN porte = 9 THEN "Mais de 80 anos"
+                    CASE WHEN faixa_etaria = 0 THEN "Nao se aplica"
+                         WHEN faixa_etaria = 1 THEN "0 a 12 anos"
+                         WHEN faixa_etaria = 2 THEN "13 a 20 anos"
+                         WHEN faixa_etaria = 3 THEN "21 a 30 anos"
+                         WHEN faixa_etaria = 4 THEN "31 a 40 anos"
+                         WHEN faixa_etaria = 5 THEN "41 a 50 anos"
+                         WHEN faixa_etaria = 6 THEN "51 a 60 anos"
+                         WHEN faixa_etaria = 7 THEN "61 a 70 anos"
+                         WHEN faixa_etaria = 8 THEN "71 a 80 anos"
+                         WHEN faixa_etaria = 9 THEN "Mais de 80 anos"
                          ELSE null
                     END
                     """
@@ -358,8 +365,8 @@ class SociosCleaner(BigDataCleaner, Cleaner):
                                      .when(f.col('id_socio') == 3, 'Estrangeiro')
                                      .otherwise(None))
             .withColumn('faixa_etaria', f.expr(predicado))
-            .join(f.broadcast(self.df_qual_socio.select(rename_quals)), 'cod_quals_rep_legal', 'left')
-            .join(f.broadcast(self.df_qual_socio), 'cod_quals', 'left')
+            .join(f.broadcast(self.df_qual_socio.select(rename_quals)), 'cod_qual_socio_rep_legal', 'left')
+            .join(f.broadcast(self.df_qual_socio), 'cod_qual_socio', 'left')
             .join(f.broadcast(self.df_pais), 'cod_pais', 'left')
             .select(
                 'cnpj_empresa', 
@@ -367,19 +374,19 @@ class SociosCleaner(BigDataCleaner, Cleaner):
                 'cpf_cnpj_socio', 
                 'id_socio', 
                 'faixa_etaria',
-                'cod_quals', 
-                'nome_quals', 
+                'cod_qual_socio', 
+                'nome_qual_socio', 
                 'data_entrada_sociedade', 
                 'cod_pais', 
                 'nome_pais',
                 'num_rep_legal',
                 'nome_rep_legal', 
-                'cod_quals_rep_legal', 
-                'nome_quals_rep_legal'
+                'cod_qual_socio_rep_legal', 
+                'nome_qual_socio_rep_legal'
             )
         )
 
-    def clean(self, mode: str = 'error') -> None:
+    def clean(self, mode: str = 'error', n_partitions:int = 32) -> None:
         """
         Wrapper for method execution.
         
@@ -391,6 +398,9 @@ class SociosCleaner(BigDataCleaner, Cleaner):
             * overwrite: Overwrite existing data
             * ignore: Silently ignores this operation
             * error or errorifexists (default): Raises an error
+
+        n_partitions : int
+            Number of data partitions in execution
         
         Returns
     	-------
@@ -401,28 +411,25 @@ class SociosCleaner(BigDataCleaner, Cleaner):
         create_dir(self.int_dir)
         self.define_schema()
         file_path = join_path(self.file_dir, f'*SOCIOCSV')
+        # Saves intermediary table
         int_path = join_path(self.int_dir, 'int_socios')
-        self.write_int_table(
-            int_path, 
+        self.df_int = self.read_data(
             file_path, 
             'csv', 
             self.schema, 
             **RAW_READ_OPTS
         )
+        self.write_data(self.df_int, int_path, 'overwrite', n_partitions, encoding = "UTF-8")
+        # Main process
         self.df = self.read_data(int_path, 'parquet')
         self.df_pais = self.read_data(self.aux_paths['pais'], 'parquet')
         self.df_qual_socio = self.read_data(self.aux_paths['quals'], 'parquet')
         self.transform_data()
         save_path = join_path(self.save_dir, 'df_socios')
-        self.write_data(
-            self.df_cleaned, 
-            save_path, 
-            mode,
-            encoding = "UTF-8"
-        )
+        self.write_data(self.df_cleaned, save_path, mode, n_partitions)
         shutil.rmtree(self.int_dir)
 
-class EmpresasCleaner(BigDataCleaner, Cleaner):
+class EmpresasCleaner(Cleaner):
     """
     Class used to clean the table containing general information about the company, such as share capital.
 
@@ -517,7 +524,7 @@ class EmpresasCleaner(BigDataCleaner, Cleaner):
             .withColumn('capital_social', f.regexp_replace(f.col('capital_social'), ',', '.').cast('float'))
             .withColumn('nome_porte', f.expr(predicado))
             .join(f.broadcast(self.df_natju), 'cod_natju', 'left')
-            .join(f.broadcast(self.df_quals), 'cod_quals', 'left')
+            .join(f.broadcast(self.df_qual_socio), 'cod_qual_socio', 'left')
             .select(
                 'cnpj', 
                 'razao_social', 
@@ -526,12 +533,12 @@ class EmpresasCleaner(BigDataCleaner, Cleaner):
                 'ente_fed_resp',
                 'cod_natju', 
                 'nome_natju', 
-                'cod_quals', 
-                'nome_quals'
+                'cod_qual_socio', 
+                'nome_qual_socio'
             )
         )
 
-    def clean(self, mode: str = 'error') -> None:
+    def clean(self, mode: str = 'error', n_partitions:int = 32) -> None:
         """
         Wrapper for method execution.
         
@@ -543,6 +550,9 @@ class EmpresasCleaner(BigDataCleaner, Cleaner):
             * overwrite: Overwrite existing data
             * ignore: Silently ignores this operation
             * error or errorifexists (default): Raises an error
+
+        n_partitions : int
+            Number of data partitions in execution
         
         Returns
     	-------
@@ -553,28 +563,25 @@ class EmpresasCleaner(BigDataCleaner, Cleaner):
         create_dir(self.int_dir)
         self.define_schema()
         file_path = join_path(self.file_dir, f'*EMPRECSV')
+        # Saves intermediary table
         int_path = int_path = join_path(self.int_dir, 'int_empresas')
-        self.write_int_table(
-            int_path, 
+        self.df_int = self.read_data(
             file_path, 
             'csv', 
             self.schema, 
             **RAW_READ_OPTS
         )
+        self.write_data(self.df_int, int_path, 'overwrite', n_partitions, encoding = "UTF-8")
+        # Main process
         self.df = self.read_data(int_path, 'parquet')
-        self.df_pais = self.read_data(self.aux_paths['pais'], 'parquet')
+        self.df_natju = self.read_data(self.aux_paths['natju'], 'parquet')
         self.df_qual_socio = self.read_data(self.aux_paths['quals'], 'parquet')
         self.transform_data()
         save_path = join_path(self.save_dir, 'df_empresas')
-        self.write_data(
-            self.df_cleaned, 
-            save_path, 
-            mode,
-            encoding = "UTF-8"
-        )
+        self.write_data(self.df_cleaned, save_path, mode, n_partitions)
         shutil.rmtree(self.int_dir)
 
-class EstabCleaner(BigDataCleaner, Cleaner):
+class EstabCleaner(Cleaner):
     """
     Class used to clean the biggest dataset, that contains all the information of the company at the moment of registration,
     such as main economic activity, location, contacts etc.
@@ -674,7 +681,7 @@ class EstabCleaner(BigDataCleaner, Cleaner):
             .select(*cols, *['nome_mun', 'nome_pais'])
         )
 
-    def clean(self, mode: str = 'error') -> None:
+    def clean(self, mode:str = 'error', n_partitions:int = 32) -> None:
         """
         Wrapper for method execution.
         
@@ -686,6 +693,9 @@ class EstabCleaner(BigDataCleaner, Cleaner):
             * overwrite: Overwrite existing data
             * ignore: Silently ignores this operation
             * error or errorifexists (default): Raises an error
+
+        n_partitions : int
+            Number of data partitions in execution
         
         Returns
     	-------
@@ -696,24 +706,20 @@ class EstabCleaner(BigDataCleaner, Cleaner):
         create_dir(self.int_dir)
         self.define_schema()
         file_path = join_path(self.file_dir, f'*ESTABELE')
+         # Saves intermediary table
         int_path = int_path = join_path(self.int_dir, 'int_estab')
-        self.write_int_table(
-            int_path, 
+        self.df_int = self.read_data(
             file_path, 
             'csv', 
             self.schema, 
-            **RAW_READ_OPTS,
-            encoding = "\""
+            **RAW_READ_OPTS
         )
+        self.write_data(self.df_int, int_path, 'overwrite', n_partitions, encoding = "UTF-8")
+        # Main process
         self.df = self.read_data(int_path, 'parquet')
         self.df_pais = self.read_data(self.aux_paths['pais'], 'parquet')
         self.df_mun = self.read_data(self.aux_paths['mun'], 'parquet')
         self.transform_data()
         save_path = join_path(self.save_dir, 'df_estab')
-        self.write_data(
-            self.df_cleaned, 
-            save_path,
-            mode,
-            encoding = "UTF-8"
-        )
+        self.write_data(self.df_cleaned, save_path, mode, n_partitions)
         shutil.rmtree(self.int_dir)

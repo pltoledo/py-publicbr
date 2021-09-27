@@ -73,7 +73,7 @@ class Cleaner(ABC):
         """
         return self.spark.read.format(format).options(**kwargs).load(file_path, schema=schema)
 
-    def write_data(self, df: DataFrame, save_path: str, mode: str, **kwargs) -> None:
+    def write_data(self, df: DataFrame, save_path:str, mode:str, n_partitions:int = None, **kwargs) -> None:
         """
         Writes DataFrame as parquet file in the specified destination
         
@@ -91,8 +91,18 @@ class Cleaner(ABC):
             * overwrite: Overwrite existing data
             * ignore: Silently ignores this operation
             * error or errorifexists (default): Raises an error
+        
+        n_partitions : int
+            Number of data partitions in execution
         """
-        df.write.options(**kwargs).mode(mode).save(save_path)
+        if n_partitions:
+            df_partitions = df.rdd.getNumPartitions()
+            if df_partitions >= n_partitions:
+                df.coalesce(n_partitions).write.options(**kwargs).mode(mode).save(save_path)
+            else:
+                df.repartition(n_partitions).write.options(**kwargs).mode(mode).save(save_path)
+        else:
+            df.write.options(**kwargs).mode(mode).save(save_path)
 
 class PublicSource(ABC):
     """

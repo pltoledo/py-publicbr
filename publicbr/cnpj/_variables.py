@@ -25,19 +25,19 @@ SCHEMA_COLS = {
         'id_socio', 
         'nome_socio', 
         'cpf_cnpj_socio', 
-        'cod_quals', 
+        'cod_qual_socio', 
         'data_entrada_sociedade',
         'cod_pais', 
         'num_rep_legal', 
         'nome_rep_legal', 
-        'cod_quals_rep_legal', 
+        'cod_qual_socio_rep_legal', 
         'faixa_etaria'
     ],
     'empresas': [
         'cnpj', 
         'razao_social', 
         'cod_natju', 
-        'cod_quals', 
+        'cod_qual_socio', 
         'capital_social', 
         'porte', 
         'ente_fed_resp'

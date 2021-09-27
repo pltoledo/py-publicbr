@@ -67,13 +67,18 @@ class CNPJSource(PublicSource):
         logging.info("Extracting data...")
         self.crawler.run(overwrite)
 
-    def transform(self):
+    def transform(self, mode:str):
         """
         Transform raw data extracted from public CNPJ data source.
         
         Parameters
         ----------    
-        None
+        mode : str
+            Specify the mode of writing data, if data already exist in the designed path
+            * append: Append the contents of the DataFrame to the existing data
+            * overwrite: Overwrite existing data
+            * ignore: Silently ignores this operation
+            * error or errorifexists (default): Raises an error
         
         Returns
     	-------
@@ -84,14 +89,21 @@ class CNPJSource(PublicSource):
         for name, obj in self.cleaners.items():
             logging.info(f'Cleaning {name}')
             cleaner = obj(self.spark, self.raw_dir, self.save_dir)
-            cleaner.clean()
+            cleaner.clean(mode)
 
-    def create(self, download: bool = True, overwrite: bool = True):
+    def create(self, mode:str = 'error', download:bool = True, overwrite:bool = True):
         """
         Wrapper for method execution.
         
         Parameters
         ----------    
+        mode : str
+            Specify the mode of writing data, if data already exist in the designed path
+            * append: Append the contents of the DataFrame to the existing data
+            * overwrite: Overwrite existing data
+            * ignore: Silently ignores this operation
+            * error or errorifexists (default): Raises an error
+        
         download : bool
             Indicator that the raw files must be downloaded
 
