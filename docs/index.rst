@@ -6,8 +6,8 @@ API Reference
 .. toctree::
    :maxdepth: 4
 
-   :doc:`cnpj`
-   :doc:`caged`
+   cnpj
+   caged
 
 Indices and tables
 ==================
