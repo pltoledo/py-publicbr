@@ -5,8 +5,8 @@ Welcome to py-publicbr's documentation!
    :maxdepth: 2
    :caption: Contents:
 
-cnpj
-caged
+:doc:`/cnpj`
+:doc:`/caged`
 
 Indices and tables
 ==================
