@@ -4,6 +4,7 @@
 `py-publicbr` is a `Python` package used to extract and consolidate public data made available by many Brazilian governmental entities. Currently it supports the following data sources:
 
 * [CNPJ open data](https://www.gov.br/receitafederal/pt-br/assuntos/orientacao-tributaria/cadastros/consultas/dados-publicos-cnpj), by Receita Federal
+* [CAGED](http://pdet.mte.gov.br/microdados-rais-e-caged), by Ministério do Trabalho
 
 ## Dependecies
 
