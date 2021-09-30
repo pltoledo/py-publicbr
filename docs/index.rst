@@ -4,10 +4,10 @@ Welcome to py-publicbr's documentation!
 API Reference
 ================
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 4
 
-   cnpj
-   caged
+   :doc:`cnpj`
+   :doc:`caged`
 
 Indices and tables
 ==================
