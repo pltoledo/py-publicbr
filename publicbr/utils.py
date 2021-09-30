@@ -20,6 +20,13 @@ def clean_types(dtype, cols):
         return df
     return _
 
+def renamer(dict):
+    def _(df):
+        for c, n in dict.items():
+            df = df.withColumnRenamed(c, n)
+        return df
+    return _
+
 def create_dir(path):
     if not os.path.exists(path):
         os.makedirs(path)

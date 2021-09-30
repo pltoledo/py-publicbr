@@ -101,7 +101,7 @@ class AuxCleaner(Cleaner):
         )
         return df_cleaned
 
-    def clean(self, mode: str = 'error', n_partitions:int = 32) -> None:
+    def clean(self, mode: str = 'error', n_partitions:int = 32, **kwargs) -> None:
         """
         Wrapper for method execution.
         
@@ -135,13 +135,7 @@ class AuxCleaner(Cleaner):
             )
             df = self.transform_data(df)
             save_path = join_path(self.save_dir, 'df_' + AUX_NAMES[id])
-            self.write_data(
-                df, 
-                save_path, 
-                mode,
-                n_partitions,
-                encoding = "UTF-8"
-            )
+            self.write_data(df, save_path, mode, n_partitions=n_partitions, encoding = "UTF-8", **kwargs)
 
 class SimplesCleaner(Cleaner):
     """
@@ -217,7 +211,7 @@ class SimplesCleaner(Cleaner):
             .transform(clean_types('date', date_cols))
         )
         
-    def clean(self, mode: str = 'error', n_partitions:int = 32) -> None:
+    def clean(self, mode: str = 'error', n_partitions:int = 32, **kwargs) -> None:
         """
         Wrapper for method execution.
         
@@ -249,13 +243,7 @@ class SimplesCleaner(Cleaner):
         )
         self.transform_data()
         save_path = join_path(self.save_dir, 'df_simples')
-        self.write_data(
-            self.df_cleaned, 
-            save_path,
-            mode, 
-            n_partitions,
-            encoding = "UTF-8"
-        )
+        self.write_data(self.df_cleaned, save_path, mode, n_partitions=n_partitions, encoding = "UTF-8", **kwargs)
 
 class SociosCleaner(Cleaner):
     """
@@ -386,7 +374,7 @@ class SociosCleaner(Cleaner):
             )
         )
 
-    def clean(self, mode: str = 'error', n_partitions:int = 32) -> None:
+    def clean(self, mode: str = 'error', n_partitions:int = 32, **kwargs) -> None:
         """
         Wrapper for method execution.
         
@@ -419,14 +407,14 @@ class SociosCleaner(Cleaner):
             self.schema, 
             **RAW_READ_OPTS
         )
-        self.write_data(self.df_int, int_path, 'overwrite', n_partitions, encoding = "UTF-8")
+        self.write_data(self.df_int, int_path, 'overwrite', n_partitions=n_partitions, encoding = "UTF-8")
         # Main process
         self.df = self.read_data(int_path, 'parquet')
         self.df_pais = self.read_data(self.aux_paths['pais'], 'parquet')
         self.df_qual_socio = self.read_data(self.aux_paths['quals'], 'parquet')
         self.transform_data()
         save_path = join_path(self.save_dir, 'df_socios')
-        self.write_data(self.df_cleaned, save_path, mode, n_partitions)
+        self.write_data(self.df_cleaned, save_path, mode, n_partitions=n_partitions, **kwargs)
         shutil.rmtree(self.int_dir)
 
 class EmpresasCleaner(Cleaner):
@@ -538,7 +526,7 @@ class EmpresasCleaner(Cleaner):
             )
         )
 
-    def clean(self, mode: str = 'error', n_partitions:int = 32) -> None:
+    def clean(self, mode: str = 'error', n_partitions:int = 32, **kwargs) -> None:
         """
         Wrapper for method execution.
         
@@ -571,14 +559,14 @@ class EmpresasCleaner(Cleaner):
             self.schema, 
             **RAW_READ_OPTS
         )
-        self.write_data(self.df_int, int_path, 'overwrite', n_partitions, encoding = "UTF-8")
+        self.write_data(self.df_int, int_path, 'overwrite', n_partitions=n_partitions, encoding = "UTF-8")
         # Main process
         self.df = self.read_data(int_path, 'parquet')
         self.df_natju = self.read_data(self.aux_paths['natju'], 'parquet')
         self.df_qual_socio = self.read_data(self.aux_paths['quals'], 'parquet')
         self.transform_data()
         save_path = join_path(self.save_dir, 'df_empresas')
-        self.write_data(self.df_cleaned, save_path, mode, n_partitions)
+        self.write_data(self.df_cleaned, save_path, mode, n_partitions=n_partitions, **kwargs)
         shutil.rmtree(self.int_dir)
 
 class EstabCleaner(Cleaner):
@@ -681,7 +669,7 @@ class EstabCleaner(Cleaner):
             .select(*cols, *['nome_mun', 'nome_pais'])
         )
 
-    def clean(self, mode:str = 'error', n_partitions:int = 32) -> None:
+    def clean(self, mode:str = 'error', n_partitions:int = 32, **kwargs) -> None:
         """
         Wrapper for method execution.
         
@@ -714,12 +702,12 @@ class EstabCleaner(Cleaner):
             self.schema, 
             **RAW_READ_OPTS
         )
-        self.write_data(self.df_int, int_path, 'overwrite', n_partitions, encoding = "UTF-8")
+        self.write_data(self.df_int, int_path, 'overwrite', n_partitions=n_partitions, encoding = "UTF-8")
         # Main process
         self.df = self.read_data(int_path, 'parquet')
         self.df_pais = self.read_data(self.aux_paths['pais'], 'parquet')
         self.df_mun = self.read_data(self.aux_paths['mun'], 'parquet')
         self.transform_data()
         save_path = join_path(self.save_dir, 'df_estab')
-        self.write_data(self.df_cleaned, save_path, mode, n_partitions)
+        self.write_data(self.df_cleaned, save_path, mode, n_partitions=n_partitions, **kwargs)
         shutil.rmtree(self.int_dir)

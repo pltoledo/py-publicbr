@@ -1,14 +1,16 @@
-from ._crawler import CNPJCrawler
-from ._consolidation import *
+from ntpath import join
+from pyspark.sql import SparkSession
+from ._crawler import CagedCrawler
+from ._consolidation import CagedCleaner
 from ..base import PublicSource
 from ..utils import join_path, create_dir
 
 import logging
 logging.getLogger().setLevel(logging.INFO)
 
-class CNPJSource(PublicSource):
+class CagedSource(PublicSource):
     """
-    Class used to extract CNPJ data.
+    Class used to extract Caged data.
     
     Parameters
     ----------
@@ -32,32 +34,28 @@ class CNPJSource(PublicSource):
     crawler : Crawler
         Object used to extract data from the public source
 
-    cleaners : Dict[Cleaner]
-        Dict with the cleaners used to consolidate tables
+    cleaner : Cleaner
+       Object used to consolidate table
 
     """
 
     def __init__(self, spark_session: SparkSession, file_dir: str) -> None:
         super().__init__(spark_session, file_dir)
-        self.raw_dir = join_path(self.raw_dir, 'cnpj')
-        self.save_dir = join_path(self.trusted_dir, 'cnpj')
-        self.crawler = CNPJCrawler(self.raw_dir)
-        self.cleaners = {
-            'Auxiliar Tables': AuxCleaner,
-            'Simples': SimplesCleaner,
-            'Socios': SociosCleaner,
-            'Empresas': EmpresasCleaner,
-            'Estabelecimentos': EstabCleaner
+        self.raw_dir = join_path(self.raw_dir, 'caged')
+        self.save_dir = join_path(self.trusted_dir, 'caged')
+        self.ftp_folders = {
+            'estab': 'pdet/microdados/NOVO CAGED/Estabelecimentos/',
+            'mov': 'pdet/microdados/NOVO CAGED/Movimentações/'
         }
+        self.cleaner = CagedCleaner(spark_session, self.raw_dir, self.save_dir)
 
-    def extract(self, overwrite):
+    def extract(self):
         """
         Extract data from public CNPJ data source.
         
         Parameters
         ----------    
-        overwrite : bool
-            Indicator of if the already existing files should be overwritten.
+        None
         
         Returns
     	-------
@@ -65,7 +63,10 @@ class CNPJSource(PublicSource):
             returns an instance of the object
         """
         logging.info("Extracting data...")
-        self.crawler.run(overwrite)
+        for table in ['estab', 'mov']:
+            table_dir = join_path(self.raw_dir, table)
+            crawler = CagedCrawler(table_dir)
+            crawler.run(self.ftp_folders[table])
 
     def transform(self, **kwargs):
         """
@@ -81,22 +82,15 @@ class CNPJSource(PublicSource):
             returns an instance of the object
         """
         logging.info("Consolidating tables...")
-        for name, obj in self.cleaners.items():
-            logging.info(f'Cleaning {name}')
-            cleaner = obj(self.spark, self.raw_dir, self.save_dir)
-            cleaner.clean(**kwargs)
+        self.cleaner.clean(**kwargs)
 
-    def create(self, download:bool = True, overwrite:bool = True, **kwargs):
+    def create(self, **kwargs):
         """
         Wrapper for method execution.
         
         Parameters
         ----------    
-        download : bool
-            Indicator that the raw files must be downloaded
-
-        overwrite : bool
-            Indicator of if the already existing files should be overwritten.
+        None
 
         Returns
     	-------
@@ -105,8 +99,7 @@ class CNPJSource(PublicSource):
         """
         create_dir(self.raw_dir)
         create_dir(self.save_dir)
-        if download:
-            self.extract(overwrite)
+        self.extract()
         self.transform(**kwargs)
         logging.info("Success!")
 

@@ -58,7 +58,7 @@ class CNPJCrawler(Crawler):
         #        shutil.copyfileobj(r.raw, fd)
         
         with open(save_path, 'wb') as f, closing(requests.get(url, stream=True)) as res:
-            for chunk in res.iter_content(chunk_size=512):
+            for chunk in res.iter_content(chunk_size=1024):
                 f.write(chunk)
     
     def get_data(self, overwrite: bool) -> None:
@@ -78,7 +78,8 @@ class CNPJCrawler(Crawler):
         for file in tqdm(self.files):
             url = self.base_url + file
             save_path = join_path(self.save_dir, file)
-            if not os.path.exists(save_path.replace('.zip', '')):
+            path_exist = lambda x: not os.path.exists(x)
+            if path_exist(save_path) and path_exist(save_path.replace('.zip', '')):
                 self.download_url(url, save_path)
             elif overwrite:
                 self.download_url(url, save_path)
