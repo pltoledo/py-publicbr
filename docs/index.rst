@@ -1,8 +1,13 @@
 Welcome to py-publicbr's documentation!
 =====================================
 
-:doc:`/cnpj`
-:doc:`/caged`
+API Reference
+================
+.. toctree::
+   :maxdepth: 1
+
+   cnpj
+   caged
 
 Indices and tables
 ==================
