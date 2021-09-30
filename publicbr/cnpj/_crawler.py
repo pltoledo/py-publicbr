@@ -5,7 +5,6 @@ from ..base import Crawler
 import requests
 import os
 import zipfile
-import shutil
 from contextlib import closing
 
 class CNPJCrawler(Crawler):
@@ -22,12 +21,15 @@ class CNPJCrawler(Crawler):
     base_url : str
         Url containing all the files to be downloaded
     
+    save_dir : str
+        Path to where the consolidated data should be stored
+
     files : str
         Name of the files to be downloaded
     
     """
 
-    def __init__(self, save_dir: str) -> None:
+    def __init__(self, save_dir) -> None:
 
         self.base_url = 'http://200.152.38.155/CNPJ/'
         self.save_dir = save_dir
@@ -36,7 +38,7 @@ class CNPJCrawler(Crawler):
         self.files = [i['href'] for i in soup.select('a', href=True) 
                       if i['href'].endswith('.zip')]
 
-    def download_url(self, url: str, save_path: str) -> None:
+    def download_url(self, url, save_path) -> None:
         """
         Function that downlads data from the URL.
         
@@ -58,10 +60,10 @@ class CNPJCrawler(Crawler):
         #        shutil.copyfileobj(r.raw, fd)
         
         with open(save_path, 'wb') as f, closing(requests.get(url, stream=True)) as res:
-            for chunk in res.iter_content(chunk_size=512):
+            for chunk in res.iter_content(chunk_size=1024):
                 f.write(chunk)
     
-    def get_data(self, overwrite: bool) -> None:
+    def get_data(self, overwrite) -> None:
         """
         Wrapper to download each file in `files`.
         
@@ -78,7 +80,8 @@ class CNPJCrawler(Crawler):
         for file in tqdm(self.files):
             url = self.base_url + file
             save_path = join_path(self.save_dir, file)
-            if not os.path.exists(save_path.replace('.zip', '')):
+            path_exist = lambda x: not os.path.exists(x)
+            if path_exist(save_path) and path_exist(save_path.replace('.zip', '')):
                 self.download_url(url, save_path)
             elif overwrite:
                 self.download_url(url, save_path)
@@ -109,7 +112,7 @@ class CNPJCrawler(Crawler):
             else:
                 pass
 
-    def run(self, overwrite: bool = True) -> None:
+    def run(self, overwrite = True) -> None:
         """
         Wrapper for method execution.
         

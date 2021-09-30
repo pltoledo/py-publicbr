@@ -10,7 +10,7 @@ from typing import List
 
 class AuxCleaner(Cleaner):
     """
-    Class used to clean the auxiliar tables that compose the CNPJ data. Currently, they are the following:
+    Class used to clean the auxiliary tables that compose the CNPJ data. Currently, they are the following:
 
     * CNAE
     * Municípios
@@ -32,21 +32,30 @@ class AuxCleaner(Cleaner):
 
     Attributes
     -------
+    spark : pyspark.sql.SparkSession
+        Spark session used in data manipulation
+
+    file_dir : str
+        Path to where the raw data is stored.
+
+    save_dir : str
+        Path to where the consolidated data should be stored
+    
     file_ids : List[str]
-        Names used to identify the auxiliar tables
+        Names used to identify the auxiliary tables
     
     files : str
         Name of the raw files
     
     """
 
-    def __init__(self, spark_session: SparkSession, file_dir: str, save_dir: str) -> None:
+    def __init__(self, spark_session, file_dir, save_dir) -> None:
         super().__init__(spark_session, file_dir, save_dir)
         self.file_ids = ['CNAE', 'MUNIC', 'NATJU', 'PAIS', 'QUALS', 'MOTI']
 
     def get_files(self) -> List[str]:
         """
-        Gets the correct files of the auxiliar tables from the raw directory
+        Gets the correct files of the auxiliary tables from the raw directory
         
         Parameters
         ----------    
@@ -55,20 +64,20 @@ class AuxCleaner(Cleaner):
         Returns
     	-------
         files : List[str]
-            Name os the auxiliar table files
+            Name os the auxiliary table files
         """
         all_files = os.listdir(self.file_dir)
         files = [f for n in self.file_ids for f in all_files if f.endswith(n + 'CSV')]
         return files
 
-    def define_schema(self, file_id: str) -> str:
+    def define_schema(self, file_id) -> str:
         """
         Creates schema used in the file reading.
         
         Parameters
         ----------    
         file_id : str
-            Name used to identify the auxiliar table
+            Name used to identify the auxiliary table
         
         Returns
     	-------
@@ -80,7 +89,7 @@ class AuxCleaner(Cleaner):
         schema = ', '.join([c + ' STRING' for c in cols])
         return schema
 
-    def transform_data(self, df: DataFrame) -> DataFrame:
+    def transform_data(self, df) -> DataFrame:
         """
         Performs the necessary transformations to clean the raw data.
         
@@ -101,7 +110,7 @@ class AuxCleaner(Cleaner):
         )
         return df_cleaned
 
-    def clean(self, mode: str = 'error', n_partitions:int = 32) -> None:
+    def clean(self, mode = 'error', n_partitions = 32, **kwargs) -> None:
         """
         Wrapper for method execution.
         
@@ -116,6 +125,12 @@ class AuxCleaner(Cleaner):
 
         n_partitions : int
             Number of data partitions in execution
+
+        **kwargs:
+            partition_col : str
+                Column to partition DataFrame on writing
+            key :
+                Other options passed to DataFrameWriter.options
         
         Returns
     	-------
@@ -135,13 +150,7 @@ class AuxCleaner(Cleaner):
             )
             df = self.transform_data(df)
             save_path = join_path(self.save_dir, 'df_' + AUX_NAMES[id])
-            self.write_data(
-                df, 
-                save_path, 
-                mode,
-                n_partitions,
-                encoding = "UTF-8"
-            )
+            self.write_data(df, save_path, mode, n_partitions=n_partitions, encoding = "UTF-8", **kwargs)
 
 class SimplesCleaner(Cleaner):
     """
@@ -161,6 +170,15 @@ class SimplesCleaner(Cleaner):
 
     Attributes
     -------
+    spark : pyspark.sql.SparkSession
+        Spark session used in data manipulation
+
+    file_dir : str
+        Path to where the raw data is stored.
+
+    save_dir : str
+        Path to where the consolidated data should be stored
+
     file_path : str
         Path to raw data
 
@@ -177,7 +195,7 @@ class SimplesCleaner(Cleaner):
         Spark DataFrame of cleaned data
     """
 
-    def __init__(self, spark_session: SparkSession, file_dir: str, save_dir: str) -> None:
+    def __init__(self, spark_session, file_dir, save_dir) -> None:
         super().__init__(spark_session, file_dir, save_dir)
 
     def define_schema(self) -> None:
@@ -217,7 +235,7 @@ class SimplesCleaner(Cleaner):
             .transform(clean_types('date', date_cols))
         )
         
-    def clean(self, mode: str = 'error', n_partitions:int = 32) -> None:
+    def clean(self, mode = 'error', n_partitions = 32, **kwargs) -> None:
         """
         Wrapper for method execution.
         
@@ -232,6 +250,12 @@ class SimplesCleaner(Cleaner):
 
         n_partitions : int
             Number of data partitions in execution
+        
+        **kwargs:
+            partition_col : str
+                Column to partition DataFrame on writing
+            key :
+                Other options passed to DataFrameWriter.options
         
         Returns
     	-------
@@ -249,13 +273,7 @@ class SimplesCleaner(Cleaner):
         )
         self.transform_data()
         save_path = join_path(self.save_dir, 'df_simples')
-        self.write_data(
-            self.df_cleaned, 
-            save_path,
-            mode, 
-            n_partitions,
-            encoding = "UTF-8"
-        )
+        self.write_data(self.df_cleaned, save_path, mode, n_partitions=n_partitions, encoding = "UTF-8", **kwargs)
 
 class SociosCleaner(Cleaner):
     """
@@ -274,8 +292,17 @@ class SociosCleaner(Cleaner):
 
     Attributes
     -------
+    spark : pyspark.sql.SparkSession
+        Spark session used in data manipulation
+
+    file_dir : str
+        Path to where the raw data is stored.
+
+    save_dir : str
+        Path to where the consolidated data should be stored
+
     aux_paths : Dict[str]
-        Dict with the path to the auxiliar tables used in cleaning
+        Dict with the path to the auxiliary tables used in cleaning
 
     int_dir
         Path to directory of intermediary tables
@@ -293,7 +320,7 @@ class SociosCleaner(Cleaner):
         Spark DataFrame of cleaned data
     """
 
-    def __init__(self, spark_session: SparkSession, file_dir: str, save_dir: str) -> None:
+    def __init__(self, spark_session, file_dir, save_dir) -> None:
         super().__init__(spark_session, file_dir, save_dir)
         self.aux_paths = {
             'pais': join_path(save_dir, 'df_pais'),
@@ -386,7 +413,7 @@ class SociosCleaner(Cleaner):
             )
         )
 
-    def clean(self, mode: str = 'error', n_partitions:int = 32) -> None:
+    def clean(self, mode = 'error', n_partitions = 32, **kwargs) -> None:
         """
         Wrapper for method execution.
         
@@ -401,6 +428,12 @@ class SociosCleaner(Cleaner):
 
         n_partitions : int
             Number of data partitions in execution
+        
+        **kwargs:
+            partition_col : str
+                Column to partition DataFrame on writing
+            key :
+                Other options passed to DataFrameWriter.options
         
         Returns
     	-------
@@ -419,14 +452,14 @@ class SociosCleaner(Cleaner):
             self.schema, 
             **RAW_READ_OPTS
         )
-        self.write_data(self.df_int, int_path, 'overwrite', n_partitions, encoding = "UTF-8")
+        self.write_data(self.df_int, int_path, 'overwrite', n_partitions=n_partitions, encoding = "UTF-8")
         # Main process
         self.df = self.read_data(int_path, 'parquet')
         self.df_pais = self.read_data(self.aux_paths['pais'], 'parquet')
         self.df_qual_socio = self.read_data(self.aux_paths['quals'], 'parquet')
         self.transform_data()
         save_path = join_path(self.save_dir, 'df_socios')
-        self.write_data(self.df_cleaned, save_path, mode, n_partitions)
+        self.write_data(self.df_cleaned, save_path, mode, n_partitions=n_partitions, **kwargs)
         shutil.rmtree(self.int_dir)
 
 class EmpresasCleaner(Cleaner):
@@ -446,8 +479,17 @@ class EmpresasCleaner(Cleaner):
 
     Attributes
     -------
+    spark : pyspark.sql.SparkSession
+        Spark session used in data manipulation
+
+    file_dir : str
+        Path to where the raw data is stored.
+
+    save_dir : str
+        Path to where the consolidated data should be stored
+
     aux_paths : Dict[str]
-        Dict with the path to the auxiliar tables used in cleaning
+        Dict with the path to the auxiliary tables used in cleaning
 
     int_dir
         Path to directory of intermediary tables
@@ -462,7 +504,7 @@ class EmpresasCleaner(Cleaner):
         Spark DataFrame of cleaned data
     """
 
-    def __init__(self, spark_session: SparkSession, file_dir: str, save_dir: str) -> None:
+    def __init__(self, spark_session, file_dir, save_dir) -> None:
 
         super().__init__(spark_session, file_dir, save_dir)
         self.aux_paths = {
@@ -538,7 +580,7 @@ class EmpresasCleaner(Cleaner):
             )
         )
 
-    def clean(self, mode: str = 'error', n_partitions:int = 32) -> None:
+    def clean(self, mode = 'error', n_partitions = 32, **kwargs) -> None:
         """
         Wrapper for method execution.
         
@@ -553,6 +595,12 @@ class EmpresasCleaner(Cleaner):
 
         n_partitions : int
             Number of data partitions in execution
+
+        **kwargs:
+            partition_col : str
+                Column to partition DataFrame on writing
+            key :
+                Other options passed to DataFrameWriter.options
         
         Returns
     	-------
@@ -571,14 +619,14 @@ class EmpresasCleaner(Cleaner):
             self.schema, 
             **RAW_READ_OPTS
         )
-        self.write_data(self.df_int, int_path, 'overwrite', n_partitions, encoding = "UTF-8")
+        self.write_data(self.df_int, int_path, 'overwrite', n_partitions=n_partitions, encoding = "UTF-8")
         # Main process
         self.df = self.read_data(int_path, 'parquet')
         self.df_natju = self.read_data(self.aux_paths['natju'], 'parquet')
         self.df_qual_socio = self.read_data(self.aux_paths['quals'], 'parquet')
         self.transform_data()
         save_path = join_path(self.save_dir, 'df_empresas')
-        self.write_data(self.df_cleaned, save_path, mode, n_partitions)
+        self.write_data(self.df_cleaned, save_path, mode, n_partitions=n_partitions, **kwargs)
         shutil.rmtree(self.int_dir)
 
 class EstabCleaner(Cleaner):
@@ -599,8 +647,17 @@ class EstabCleaner(Cleaner):
 
     Attributes
     -------
+    spark : pyspark.sql.SparkSession
+        Spark session used in data manipulation
+
+    file_dir : str
+        Path to where the raw data is stored.
+
+    save_dir : str
+        Path to where the consolidated data should be stored
+
     aux_paths : Dict[str]
-        Dict with the path to the auxiliar tables used in cleaning
+        Dict with the path to the auxiliary tables used in cleaning
 
     int_dir
         Path to directory of intermediary tables
@@ -615,7 +672,7 @@ class EstabCleaner(Cleaner):
         Spark DataFrame of cleaned data
     """
 
-    def __init__(self, spark_session: SparkSession, file_dir: str, save_dir: str) -> None:
+    def __init__(self, spark_session, file_dir, save_dir) -> None:
 
         super().__init__(spark_session, file_dir, save_dir)
         self.aux_paths = {
@@ -681,7 +738,7 @@ class EstabCleaner(Cleaner):
             .select(*cols, *['nome_mun', 'nome_pais'])
         )
 
-    def clean(self, mode:str = 'error', n_partitions:int = 32) -> None:
+    def clean(self, mode = 'error', n_partitions = 32, **kwargs) -> None:
         """
         Wrapper for method execution.
         
@@ -696,6 +753,12 @@ class EstabCleaner(Cleaner):
 
         n_partitions : int
             Number of data partitions in execution
+        
+        **kwargs:
+            partition_col : str
+                Column to partition DataFrame on writing
+            key :
+                Other options passed to DataFrameWriter.options
         
         Returns
     	-------
@@ -714,12 +777,12 @@ class EstabCleaner(Cleaner):
             self.schema, 
             **RAW_READ_OPTS
         )
-        self.write_data(self.df_int, int_path, 'overwrite', n_partitions, encoding = "UTF-8")
+        self.write_data(self.df_int, int_path, 'overwrite', n_partitions=n_partitions, encoding = "UTF-8")
         # Main process
         self.df = self.read_data(int_path, 'parquet')
         self.df_pais = self.read_data(self.aux_paths['pais'], 'parquet')
         self.df_mun = self.read_data(self.aux_paths['mun'], 'parquet')
         self.transform_data()
         save_path = join_path(self.save_dir, 'df_estab')
-        self.write_data(self.df_cleaned, save_path, mode, n_partitions)
+        self.write_data(self.df_cleaned, save_path, mode, n_partitions=n_partitions, **kwargs)
         shutil.rmtree(self.int_dir)
