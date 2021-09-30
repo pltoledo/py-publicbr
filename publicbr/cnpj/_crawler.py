@@ -94,7 +94,7 @@ class CNPJCrawler(Crawler):
         
         Parameters
         ----------            
-        None
+            None
 
         Returns
     	-------
