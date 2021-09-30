@@ -59,11 +59,11 @@ class AuxCleaner(Cleaner):
         
         Parameters
         ----------    
-        None
+            None
         
         Returns
     	-------
-        files : List[str]
+        List[str]:
             Name os the auxiliary table files
         """
         all_files = os.listdir(self.file_dir)
@@ -81,7 +81,7 @@ class AuxCleaner(Cleaner):
         
         Returns
     	-------
-        schema : str
+        str:
             String specifying the schema of the DataFrame
         """
         name = AUX_NAMES[file_id]
@@ -100,7 +100,7 @@ class AuxCleaner(Cleaner):
         
         Returns
     	-------
-        df : pyspark.sql.dataframe.DataFrame
+        pyspark.sql.dataframe.DataFrame:
             Spark DataFrame of the consolidated data
         """
         code, description = df.columns
@@ -204,7 +204,7 @@ class SimplesCleaner(Cleaner):
         
         Parameters
         ----------    
-        None
+            None
         
         Returns
     	-------
@@ -220,7 +220,7 @@ class SimplesCleaner(Cleaner):
         
         Parameters
         ----------    
-        None
+            None
         
         Returns
     	-------
@@ -334,7 +334,7 @@ class SociosCleaner(Cleaner):
         
         Parameters
         ----------    
-        None
+            None
         
         Returns
     	-------
@@ -350,7 +350,7 @@ class SociosCleaner(Cleaner):
         
         Parameters
         ----------    
-        None
+            None
         
         Returns
     	-------
@@ -519,7 +519,7 @@ class EmpresasCleaner(Cleaner):
         
         Parameters
         ----------    
-        None
+            None
         
         Returns
     	-------
@@ -535,7 +535,7 @@ class EmpresasCleaner(Cleaner):
         
         Parameters
         ----------    
-        None
+            None
         
         Returns
     	-------
@@ -687,7 +687,7 @@ class EstabCleaner(Cleaner):
         
         Parameters
         ----------    
-        None
+            None
         
         Returns
     	-------
@@ -703,7 +703,7 @@ class EstabCleaner(Cleaner):
         
         Parameters
         ----------    
-        None
+            None
         
         Returns
     	-------

@@ -77,7 +77,7 @@ class CagedCrawler(Crawler):
         
         Parameters
         ----------            
-        None
+            None
 
         Returns
     	-------
@@ -109,7 +109,7 @@ class CagedCrawler(Crawler):
         
         Parameters
         ----------            
-        None
+            None
 
         Returns
     	-------
@@ -136,7 +136,7 @@ class CagedCrawler(Crawler):
         
         Parameters
         ----------            
-        None
+            None
 
         Returns
     	-------
@@ -162,7 +162,7 @@ class CagedCrawler(Crawler):
         
         Parameters
         ----------            
-        None
+            None
 
         Returns
     	-------
@@ -181,7 +181,7 @@ class CagedCrawler(Crawler):
         
         Parameters
         ----------            
-        None
+            None
 
         Returns
     	-------
@@ -199,7 +199,7 @@ class CagedCrawler(Crawler):
         
         Parameters
         ----------            
-        None
+            None
 
         Returns
     	-------
