@@ -4,8 +4,9 @@ Welcome to py-publicbr's documentation!
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
-   cnpj
-   caged
+
+cnpj
+caged
 
 Indices and tables
 ==================
