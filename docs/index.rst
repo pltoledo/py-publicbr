@@ -2,7 +2,7 @@ Welcome to py-publicbr's documentation!
 =====================================
 
 API Reference
-================
+------------------
 .. toctree::
    :maxdepth: 4
 
@@ -10,7 +10,7 @@ API Reference
    caged
 
 Indices and tables
-==================
+---------------------
 
 * :ref:`genindex`
 * :ref:`modindex`
