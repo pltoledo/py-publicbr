@@ -57,7 +57,9 @@ cleaner = EstabCleaner(
 )
 cleaner.clean()
 ```
-<<<<<<< HEAD
+## API Reference
+
+The package documentation can be acessed [here](https://py-publicbr.readthedocs.io/en/latest/)
 
 ## Author
 Created by Pedro Toledo. Feel free to contact me!
@@ -65,5 +67,3 @@ Created by Pedro Toledo. Feel free to contact me!
 [![Twitter Badge](https://img.shields.io/badge/-@pedrotol_-1ca0f1?style=flat-square&labelColor=1ca0f1&logo=twitter&logoColor=white&link=https://twitter.com/pedrotol_)](https://twitter.com/pedrotol_)
 ![Linkedin Badge](https://img.shields.io/badge/-Pedro-blue?style=flat-square&logo=Linkedin&logoColor=white&link=https://www.linkedin.com/in/pedro-toledo/)
 [![Gmail Badge](https://img.shields.io/badge/-pedroltoledo@gmail.com-c14438?style=flat-square&logo=Gmail&logoColor=white&link=mailto:tgmarinho@gmail.com)](mailto:pedroltoledo@gmail.com)
-=======
->>>>>>> 3b5cb20837c2f8760f50559ca96ae2681c19c3b6
