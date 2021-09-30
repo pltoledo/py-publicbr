@@ -1,7 +1,4 @@
 from abc import ABC, abstractmethod
-from pyspark.sql import SparkSession
-from pyspark.sql.types import StructType
-from typing import Union
 from .utils import join_path
 
 from pyspark.sql.dataframe import DataFrame
@@ -30,7 +27,7 @@ class Cleaner(ABC):
         Path to where the consolidated data should be stored
     """
 
-    def __init__(self, spark_session: SparkSession, file_dir: str, save_dir: str) -> None:
+    def __init__(self, spark_session, file_dir, save_dir) -> None:
         self.spark = spark_session
         self.file_dir = file_dir
         self.save_dir = save_dir
@@ -56,7 +53,7 @@ class Cleaner(ABC):
         """
         pass
 
-    def read_data(self, file_path: str, format: str, schema: Union[str, StructType] = None, **kwargs) -> DataFrame:
+    def read_data(self, file_path, format, schema = None, **kwargs) -> DataFrame:
         """
         Reads DataFrame from the specified path
 
@@ -66,21 +63,25 @@ class Cleaner(ABC):
             Path to the data to be read
 
         format : str
-            File format of data to be read
+            File format of data being read
 
-        schema : str or pyspark.sql.types.StructType
+        schema : str | pyspark.sql.types.StructType
             String specifying the schema of the DataFrame
+        
+        **kwargs: 
+            Other options passed to DataFrameReader.options
+
         """
         return self.spark.read.format(format).options(**kwargs).load(file_path, schema=schema)
 
     def write_data(
         self, 
-        df: DataFrame, 
-        save_path: str,
-        mode: str,
-        format: str = None,
-        partition_col:str = None,
-        n_partitions: int = None,
+        df, 
+        save_path,
+        mode,
+        format = None,
+        partition_col = None,
+        n_partitions = None,
         **kwargs
     ) -> None:
         """
@@ -100,9 +101,19 @@ class Cleaner(ABC):
             * overwrite: Overwrite existing data
             * ignore: Silently ignores this operation
             * error or errorifexists (default): Raises an error
+
+        format : str
+            File format of data being written
         
         n_partitions : int
-            Number of data partitions in execution
+            Number of DataFrame partitions
+        
+        partition_col : str
+                Column to partition DataFrame on writing
+
+        **kwargs:
+            Other options passed to DataFrameWriter.options
+
         """
         if n_partitions:
             df_partitions = df.rdd.getNumPartitions()
@@ -127,13 +138,11 @@ class PublicSource(ABC):
         Spark Session used to manipulate data
 
     file_dir : str
-        Path to where the raw data is stored.
+        Path to where data should be stored.
 
-    save_dir : str
-        Path to where the consolidated data should be stored
     """
 
-    def __init__(self, spark_session: SparkSession, file_dir: str) -> None:
+    def __init__(self, spark_session, file_dir) -> None:
         self.spark = spark_session
         self.raw_dir = join_path(file_dir, 'data', 'raw')
         self.trusted_dir = join_path(file_dir, 'data', 'trusted')

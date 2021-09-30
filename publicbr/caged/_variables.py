@@ -70,6 +70,8 @@ RENAME_DICT = {
         'município': 'cod_municipio',
         'seção': 'cod_secao',
         'subclasse': 'cod_subclasse',
+        'admitidos': 'admitidos',
+        'desligados': 'desligados',
         'saldomovimentação': 'saldo_movimentacao',
         'tipoempregador': 'cod_tipo_empregador',
         'tipoestabelecimento': 'cod_tipo_estab',

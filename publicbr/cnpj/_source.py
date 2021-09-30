@@ -26,7 +26,7 @@ class CNPJSource(PublicSource):
     raw_dir : str
         Path to the diectory used to store raw data
     
-    save_dir : str
+    trusted_dir : str
         Path to the diectory used to store cleaned data
 
     crawler : Crawler
@@ -37,13 +37,13 @@ class CNPJSource(PublicSource):
 
     """
 
-    def __init__(self, spark_session: SparkSession, file_dir: str) -> None:
+    def __init__(self, spark_session, file_dir) -> None:
         super().__init__(spark_session, file_dir)
         self.raw_dir = join_path(self.raw_dir, 'cnpj')
-        self.save_dir = join_path(self.trusted_dir, 'cnpj')
+        self.trusted_dir = join_path(self.trusted_dir, 'cnpj')
         self.crawler = CNPJCrawler(self.raw_dir)
         self.cleaners = {
-            'Auxiliar Tables': AuxCleaner,
+            'Auxiliary Tables': AuxCleaner,
             'Simples': SimplesCleaner,
             'Socios': SociosCleaner,
             'Empresas': EmpresasCleaner,
@@ -73,7 +73,19 @@ class CNPJSource(PublicSource):
         
         Parameters
         ----------    
-        None
+        **kwargs:
+            mode : str
+                Specify the mode of writing data, if data already exist in the designed path
+                * append: Append the contents of the DataFrame to the existing data
+                * overwrite: Overwrite existing data
+                * ignore: Silently ignores this operation
+                * error or errorifexists (default): Raises an error 
+            n_partitions : int
+                Number of DataFrame partitions
+            partition_col : str
+                Column to partition DataFrame on writing
+            key :
+                Other options passed to DataFrameWriter.options
         
         Returns
     	-------
@@ -83,10 +95,10 @@ class CNPJSource(PublicSource):
         logging.info("Consolidating tables...")
         for name, obj in self.cleaners.items():
             logging.info(f'Cleaning {name}')
-            cleaner = obj(self.spark, self.raw_dir, self.save_dir)
+            cleaner = obj(self.spark, self.raw_dir, self.trusted_dir)
             cleaner.clean(**kwargs)
 
-    def create(self, download:bool = True, overwrite:bool = True, **kwargs):
+    def create(self, download = True, overwrite = True, **kwargs):
         """
         Wrapper for method execution.
         
@@ -97,6 +109,20 @@ class CNPJSource(PublicSource):
 
         overwrite : bool
             Indicator of if the already existing files should be overwritten.
+        
+        **kwargs:
+            mode : str
+                Specify the mode of writing data, if data already exist in the designed path
+                * append: Append the contents of the DataFrame to the existing data
+                * overwrite: Overwrite existing data
+                * ignore: Silently ignores this operation
+                * error or errorifexists (default): Raises an error 
+            n_partitions : int
+                Number of DataFrame partitions
+            partition_col : str
+                Column to partition DataFrame on writing
+            key :
+                Other options passed to DataFrameWriter.options
 
         Returns
     	-------
@@ -104,7 +130,7 @@ class CNPJSource(PublicSource):
             returns an instance of the object
         """
         create_dir(self.raw_dir)
-        create_dir(self.save_dir)
+        create_dir(self.trusted_dir)
         if download:
             self.extract(overwrite)
         self.transform(**kwargs)

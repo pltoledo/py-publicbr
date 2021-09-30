@@ -28,26 +28,26 @@ class CagedSource(PublicSource):
     raw_dir : str
         Path to the diectory used to store raw data
     
-    save_dir : str
+    trusted_dir : str
         Path to the diectory used to store cleaned data
 
-    crawler : Crawler
-        Object used to extract data from the public source
+    ftp_folders : Dict[str]
+        Dict with the correct folders in the FTP server for each CAGED level
 
     cleaner : Cleaner
-       Object used to consolidate table
+        Object used to consolidate table
 
     """
 
     def __init__(self, spark_session: SparkSession, file_dir: str) -> None:
         super().__init__(spark_session, file_dir)
         self.raw_dir = join_path(self.raw_dir, 'caged')
-        self.save_dir = join_path(self.trusted_dir, 'caged')
+        self.trusted_dir = join_path(self.trusted_dir, 'caged')
         self.ftp_folders = {
             'estab': 'pdet/microdados/NOVO CAGED/Estabelecimentos/',
             'mov': 'pdet/microdados/NOVO CAGED/Movimentações/'
         }
-        self.cleaner = CagedCleaner(spark_session, self.raw_dir, self.save_dir)
+        self.cleaner = CagedCleaner(spark_session, self.raw_dir, self.trusted_dir)
 
     def extract(self):
         """
@@ -74,7 +74,19 @@ class CagedSource(PublicSource):
         
         Parameters
         ----------    
-        None
+        **kwargs:
+            mode : str
+                Specify the mode of writing data, if data already exist in the designed path
+                * append: Append the contents of the DataFrame to the existing data
+                * overwrite: Overwrite existing data
+                * ignore: Silently ignores this operation
+                * error or errorifexists (default): Raises an error 
+            n_partitions : int
+                Number of DataFrame partitions
+            partition_col : str
+                Column to partition DataFrame on writing
+            key :
+                Other options passed to DataFrameWriter.options
         
         Returns
     	-------
@@ -90,7 +102,19 @@ class CagedSource(PublicSource):
         
         Parameters
         ----------    
-        None
+        **kwargs:
+            mode : str
+                Specify the mode of writing data, if data already exist in the designed path
+                * append: Append the contents of the DataFrame to the existing data
+                * overwrite: Overwrite existing data
+                * ignore: Silently ignores this operation
+                * error or errorifexists (default): Raises an error 
+            n_partitions : int
+                Number of DataFrame partitions
+            partition_col : str
+                Column to partition DataFrame on writing
+            key :
+                Other options passed to DataFrameWriter.options
 
         Returns
     	-------
@@ -98,7 +122,7 @@ class CagedSource(PublicSource):
             returns an instance of the object
         """
         create_dir(self.raw_dir)
-        create_dir(self.save_dir)
+        create_dir(self.trusted_dir)
         self.extract()
         self.transform(**kwargs)
         logging.info("Success!")
