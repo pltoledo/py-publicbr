@@ -59,8 +59,6 @@ class AuxCleaner(Cleaner):
         
         Parameters
         ----------    
-            None
-        
         Returns
     	-------
         List[str]:
@@ -204,8 +202,6 @@ class SimplesCleaner(Cleaner):
         
         Parameters
         ----------    
-            None
-        
         Returns
     	-------
         self:
@@ -219,9 +215,7 @@ class SimplesCleaner(Cleaner):
         Performs the necessary transformations to clean the raw data.
         
         Parameters
-        ----------    
-            None
-        
+        ----------
         Returns
     	-------
         self:
@@ -333,9 +327,7 @@ class SociosCleaner(Cleaner):
         Creates schema used in the file reading.
         
         Parameters
-        ----------    
-            None
-        
+        ----------
         Returns
     	-------
         self:
@@ -349,9 +341,7 @@ class SociosCleaner(Cleaner):
         Performs the necessary transformations to clean the raw data.
         
         Parameters
-        ----------    
-            None
-        
+        ---------- 
         Returns
     	-------
         self:
@@ -518,9 +508,7 @@ class EmpresasCleaner(Cleaner):
         Creates schema used in the file reading.
         
         Parameters
-        ----------    
-            None
-        
+        ----------
         Returns
     	-------
         self:
@@ -535,8 +523,6 @@ class EmpresasCleaner(Cleaner):
         
         Parameters
         ----------    
-            None
-        
         Returns
     	-------
         self:
@@ -687,8 +673,6 @@ class EstabCleaner(Cleaner):
         
         Parameters
         ----------    
-            None
-        
         Returns
     	-------
         self:
@@ -703,8 +687,6 @@ class EstabCleaner(Cleaner):
         
         Parameters
         ----------    
-            None
-        
         Returns
     	-------
         self:

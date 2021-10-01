@@ -74,7 +74,6 @@ def create_dir(path) -> None:
     
     Returns
     -------
-    None
     """
     if not os.path.exists(path):
         os.makedirs(path)

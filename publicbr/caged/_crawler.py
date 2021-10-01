@@ -77,8 +77,6 @@ class CagedCrawler(Crawler):
         
         Parameters
         ----------            
-            None
-
         Returns
     	-------
         self:
@@ -109,8 +107,6 @@ class CagedCrawler(Crawler):
         
         Parameters
         ----------            
-            None
-
         Returns
     	-------
         self:
@@ -136,8 +132,6 @@ class CagedCrawler(Crawler):
         
         Parameters
         ----------            
-            None
-
         Returns
     	-------
         self:
@@ -162,8 +156,6 @@ class CagedCrawler(Crawler):
         
         Parameters
         ----------            
-            None
-
         Returns
     	-------
         List[List[str]]:
@@ -181,8 +173,6 @@ class CagedCrawler(Crawler):
         
         Parameters
         ----------            
-            None
-
         Returns
     	-------
         str:
@@ -199,8 +189,6 @@ class CagedCrawler(Crawler):
         
         Parameters
         ----------            
-            None
-
         Returns
     	-------
         List[str]:

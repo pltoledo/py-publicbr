@@ -34,7 +34,7 @@ class CagedSource(PublicSource):
     ftp_folders : Dict[str]
         Dict with the correct folders in the FTP server for each CAGED level
 
-    cleaner : Cleaner
+    cleaner : CagedCleaner
         Object used to consolidate table
 
     """
@@ -51,7 +51,7 @@ class CagedSource(PublicSource):
 
     def extract(self):
         """
-        Extract data from public CNPJ data source.
+        Extract data from public CAGED data source, using the `CagedCrawler`.
         
         Parameters
         ----------
@@ -68,7 +68,7 @@ class CagedSource(PublicSource):
 
     def transform(self, **kwargs):
         """
-        Transform raw data extracted from public CNPJ data source.
+        Transform raw data extracted from public CAGED data source, using the `CagedCleaner`.
         
         Parameters
         ----------    

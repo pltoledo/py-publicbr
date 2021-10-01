@@ -29,7 +29,7 @@ class CNPJSource(PublicSource):
     trusted_dir : str
         Path to the diectory used to store cleaned data
 
-    crawler : Crawler
+    crawler : CNPJCrawler
         Object used to extract data from the public source
 
     cleaners : Dict[Cleaner]
@@ -52,7 +52,7 @@ class CNPJSource(PublicSource):
 
     def extract(self, overwrite):
         """
-        Extract data from public CNPJ data source.
+        Extract data from public CNPJ data source, using the `CNPJCrawler`.
         
         Parameters
         ----------    
