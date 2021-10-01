@@ -54,9 +54,7 @@ class CagedSource(PublicSource):
         Extract data from public CNPJ data source.
         
         Parameters
-        ----------    
-            None
-        
+        ----------
         Returns
     	-------
         self:
