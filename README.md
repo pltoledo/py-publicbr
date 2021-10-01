@@ -57,6 +57,9 @@ cleaner = EstabCleaner(
 )
 cleaner.clean()
 ```
+## API Reference
+
+The package documentation can be acessed [here](https://py-publicbr.readthedocs.io/en/latest/)
 
 ## Author
 Created by Pedro Toledo. Feel free to contact me!
