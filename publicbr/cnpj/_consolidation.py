@@ -1,6 +1,5 @@
 from pyspark.sql.dataframe import DataFrame
 import pyspark.sql.functions as f
-from pyspark.sql import SparkSession
 from ..utils import *
 from ..base import Cleaner
 from ._variables import *
