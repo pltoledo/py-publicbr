@@ -707,6 +707,7 @@ class EstabCleaner(Cleaner):
         self.df_cleaned = (
             df_cleaned
             .withColumn('cnpj', f.lpad(f.col('cnpj'), 8, '0'))
+            .withColumn('cnpj_completo', f.concat(f.col('cnpj'), f.col('cnpj_ordem'), f.col('cnpj_dv')))
             .withColumn('cnae_primario', f.lpad(f.col('cnae_primario'), 7, '0'))
             .withColumn('id_matriz', f.when(f.col('id_matriz') == 1, 'Matriz')
                                       .when(f.col('id_matriz') == 2, 'Filial')

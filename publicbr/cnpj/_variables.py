@@ -9,6 +9,7 @@ AUX_NAMES = {
 RAW_READ_OPTS = {
         'encoding': 'ISO-8859-1',
         'sep': ';',
+        'escape': "\""
     }
 SCHEMA_COLS = {
     'simples': [
